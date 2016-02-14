@@ -1,2 +1,2 @@
 # todo-offline-first
-# TODO: Add offline feature
+TODO: Add offline feature
