@@ -1,13 +1,17 @@
 var TodoList = React.createClass({
 	getInitialState: function() {
+		return {list: []};
+	},
+
+	componentDidMount: function() {
 		var _this = this;
 
 		Store.init();
-		Store.fetch().then(function(data) {
-			_this.setState({list: data.list});
-		});
-		
-		return {list: []};
+		Store.fetch().then(
+			function(data) {
+				_this.setState({list: data.list});
+			}
+		);
 	},
 
 	addTodoItem: function(e) {
@@ -18,7 +22,8 @@ var TodoList = React.createClass({
 				id: Date.now(),
 				message: this.refs.inp.value,
 				done: false
-		}])}, function() {
+			}])
+		}, function() {
 			Store.save(_this.state.list);
 		});
 
@@ -36,8 +41,7 @@ var TodoList = React.createClass({
     };
 
   	return (
-  		<div>
-				Test: {this.state.list}
+  		<div className="container">
 				<ul>{this.state.list.map(createItem)}</ul>
 				<input ref="inp" />
 				<button onClick={this.addTodoItem}>Add</button>
@@ -46,12 +50,21 @@ var TodoList = React.createClass({
 	}
 });
 
+// var WorkOffLine = React.createClass({
+// 	getInitialState: function() {
+// 		return {}
+// 	}
+// });
+
 var Container = React.createClass({
 	render: function() {
 		return (
 			<div>
 				<div>My TODO List</div>
 				<TodoList/>
+				// TODO: Include below widgets
+				// <WorkOffLine/>
+				// <OffLineNotification/>
 			</div>
 		);
 	}

@@ -21,14 +21,6 @@ var Store = {
 		});
 
 		window.addEventListener("online", function() {
-		    // _this.fetch().then(
-				// 	function(data) {
-		    // 		_this.model = data;
-		    // 	},
-				// 	function(data) {
-				// 		// Error data
-				// 	}
-				// );
 		    _this.save();
 		});
 	},
@@ -44,9 +36,6 @@ var Store = {
 			console.log("Local Store.... SAVE");
 		} else {
 			console.log("Database Store.... SAVE", this.model);
-			// $.post("/todolist", this.model, function(data) {
-			// 	alert(data);
-			// });
 
 			$.ajax({
 	        url : "/todolist",
@@ -54,8 +43,8 @@ var Store = {
 	        data: JSON.stringify(this.model),
 	        contentType: "application/json; charset=utf-8",
 	        dataType: "json",
-	        success: function() {
-	            console.log("Pure jQuery Pure JS object");
+	        success: function(data) {
+	            console.log(data);
 	        }
 	    });
 		}
@@ -71,6 +60,7 @@ var Store = {
 		} else {
 			console.log("Database Store.... FETCH");
 			$.get("/todolist", function(data) {
+				_this.model = data.list;
 				deferred.resolve(data);
 			});
 		}

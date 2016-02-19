@@ -14,7 +14,8 @@ app.use(bodyParser.json());
 app.get('/todolist', function(req, res) {
   store.readFile("data/todolist.json", function(err, data) {
     if (err) {
-      res.send('Could read file');
+      console.log(err);
+      res.status(500).send("File cannot be read");
     } else {
       res.send(JSON.parse(data));
     }
@@ -25,7 +26,8 @@ app.post('/todolist', function(req, res) {
   console.log(JSON.stringify(req.body, null, 2));
   store.writeFile("data/todolist.json", JSON.stringify(req.body, null, 2), function(err) {
     if (err) {
-      res.send('Could not save file');
+      console.log(err);
+      res.status(500).send("File cannot be saved");
     } else {
       res.send('File saved sucessfuly');
     }
