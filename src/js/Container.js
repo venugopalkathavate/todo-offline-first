@@ -1,3 +1,14 @@
+var Connection = {
+	workOffLine: false,
+	setWorkOffLine: function(online) {
+		this.workOffLine = online;
+	},
+
+	isOnline: function() {
+		return !this.workOffLine && navigator.onLine;
+	}
+};
+
 var TodoList = React.createClass({
 	getInitialState: function() {
 		return {list: []};
@@ -6,7 +17,7 @@ var TodoList = React.createClass({
 	componentDidMount: function() {
 		var _this = this;
 
-		Store.init();
+		Store.init(Connection);
 		Store.fetch().then(
 			function(data) {
 				_this.setState({list: data.list});
@@ -50,11 +61,55 @@ var TodoList = React.createClass({
 	}
 });
 
-// var WorkOffLine = React.createClass({
-// 	getInitialState: function() {
-// 		return {}
-// 	}
-// });
+var OffLineNotification = React.createClass({
+	render: function() {
+		return (
+			<div className={this.props.offline ? "show" : "hide"}>
+				Offline
+			</div>
+		);
+	}
+});
+
+var WorkOffLine = React.createClass({
+	getInitialState: function() {
+		return {workOffLine: false};
+	},
+
+	componentDidMount: function() {
+		var _this = this;
+
+		// Register listeners
+		window.addEventListener("offline", function() {
+			_this.refs.switch.checked = true;
+			_this.refs.switch.disabled = true;
+			_this.setState({workOffLine: true, networkDown: true});
+		});
+
+		window.addEventListener("online", function() {
+			_this.refs.switch.checked = false;
+			_this.refs.switch.disabled = false;
+	    _this.setState({workOffLine: false, networkDown: false});
+		});
+	},
+
+	toggleWorkOffline: function(e) {
+		// TODO: Use better way to share common state
+		this.setState({workOffLine: e.target.checked}, function() {
+			Connection.setWorkOffLine(this.state.workOffLine);
+		});
+	},
+
+	render: function() {
+		return (
+			<div>
+				<label htmlFor="switch">Work Offline</label>
+				<input id="switch" type="checkbox" onClick={this.toggleWorkOffline} ref="switch"/>
+				<OffLineNotification offline={this.state.workOffLine}/>
+			</div>
+		);
+	}
+});
 
 var Container = React.createClass({
 	render: function() {
@@ -62,9 +117,7 @@ var Container = React.createClass({
 			<div>
 				<div>My TODO List</div>
 				<TodoList/>
-				// TODO: Include below widgets
-				// <WorkOffLine/>
-				// <OffLineNotification/>
+				<WorkOffLine/>
 			</div>
 		);
 	}

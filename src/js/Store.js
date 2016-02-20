@@ -1,19 +1,10 @@
-var OnlineOffline = {
-	workOffLine: false,
-	onlineSwitch: function(ol) {
-		this.workOffLine = ol;
-	},
-	isOnline: function() {
-		return this.workOffLine || navigator.onLine;
-		//return false;
-	}
-};
-
 // Store to manage todo list
 var Store = {
 	model: null,
-	init: function() {
+	init: function(connection) {
 		var	_this = this;
+
+		this.connection = connection;
 
 		// Register listeners
 		window.addEventListener("offline", function() {
@@ -25,12 +16,12 @@ var Store = {
 		});
 	},
 	save: function (todoList) {
-		var localStore = !OnlineOffline.isOnline();
+		var localStore = !this.connection.isOnline();
 
 		if (todoList) {
 			this.model = {list: todoList};
 		}
-
+		console.log("localStore: ", localStore);
 		if (localStore) {
 			localStorage.setItem("todoList", JSON.stringify(this.model));
 			console.log("Local Store.... SAVE");
@@ -50,7 +41,7 @@ var Store = {
 		}
 	},
 	fetch: function() {
-		var localStore = !OnlineOffline.isOnline(),
+		var localStore = !this.connection.isOnline(),
 			deferred = Q.defer(),
 			_this = this;
 
@@ -60,6 +51,10 @@ var Store = {
 		} else {
 			console.log("Database Store.... FETCH");
 			$.get("/todolist", function(data) {
+				if (!data.list) {
+					data = {list: []};
+				}
+
 				_this.model = data.list;
 				deferred.resolve(data);
 			});

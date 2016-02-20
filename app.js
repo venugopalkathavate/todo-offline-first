@@ -23,11 +23,10 @@ app.get('/todolist', function(req, res) {
 });
 
 app.post('/todolist', function(req, res) {
-  console.log(JSON.stringify(req.body, null, 2));
+  //console.log(JSON.stringify(req.body, null, 2));
   store.writeFile("data/todolist.json", JSON.stringify(req.body, null, 2), function(err) {
     if (err) {
-      console.log(err);
-      res.status(500).send("File cannot be saved");
+      res.status(500).send(err);
     } else {
       res.send('File saved sucessfuly');
     }
