@@ -43,11 +43,20 @@ var TodoList = React.createClass({
 		}
 	},
 
+	itemDone: function(item, e) {
+		e.preventDefault();
+
+		item.done = !item.done;
+		this.refs[item.id].checked = item.done; // TODO: Check React way of DOM manipulation.
+		Store.save(this.state.list);
+	},
+
 	render: function() {
+		var _this = this;
 		var createItem = function(item) {
       return (
-				<li key={item.id}>
-					<input type="checkbox" id={item.id} />
+				<li key={item.id} onClick={_this.itemDone.bind(_this, item)}>
+					<input type="checkbox" id={item.id} ref={item.id} defaultChecked={item.done}/>
 					<label htmlFor={item.id}>{item.message}</label>
 				</li>
 			);
@@ -86,12 +95,12 @@ var WorkOffLine = React.createClass({
 		// Register listeners
 		window.addEventListener("offline", function() {
 			_this.makeOfflineSwitchReadOnly(true);
-			_this.setState({workOffLine: true, networkDown: true});
+			_this.setState({workOffLine: true});
 		});
 
 		window.addEventListener("online", function() {
 			_this.makeOfflineSwitchReadOnly(false);
-	    _this.setState({workOffLine: false, networkDown: false});
+	    _this.setState({workOffLine: false});
 		});
 
 		this.makeOfflineSwitchReadOnly(!isOnline);
@@ -99,6 +108,7 @@ var WorkOffLine = React.createClass({
 	},
 
 	makeOfflineSwitchReadOnly: function(readOnly) {
+		// TODO: Should the DOM manipulation be handeled by data-biding
 		this.refs.switch.checked = readOnly;
 		this.refs.switch.disabled = readOnly;
 	},
@@ -107,6 +117,11 @@ var WorkOffLine = React.createClass({
 		// TODO: Use better way to share common state
 		this.setState({workOffLine: e.target.checked}, function() {
 			Connection.setWorkOffLine(this.state.workOffLine);
+
+			// Sync data with server
+			if(Connection.isOnline()) {
+				Store.save(JSON.parse(localStorage.getItem("todoList")).list);
+			}
 		});
 	},
 

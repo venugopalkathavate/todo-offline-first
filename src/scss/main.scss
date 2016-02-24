@@ -17,10 +17,32 @@ li {
 	font-size: 1.5em;
 	color: #4d4d4d;
 	border-bottom: 1px solid #f5f5f5;
+	cursor: pointer;
 }
 
 li label {
-	padding-left: 10px;
+	padding-left: 35px;
+	cursor: pointer;
+}
+
+li input[type=checkbox] {
+	-webkit-appearance: none;
+	position: relative;
+	outline: none;
+}
+
+li input[type=checkbox]:checked:after {
+    content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="-10 -18 100 135"><circle cx="50" cy="50" r="50" fill="none" stroke="#bddad5" stroke-width="3"/><path fill="#5dc2af" d="M72 25L42 71 27 56l-4 4 20 20 34-52z"/></svg>');
+    height: 35px;
+    width: 35px;
+    position: absolute;
+    top: -25px;
+    left: -10px;
+}
+
+li input[type=checkbox]:checked + label {
+	text-decoration: line-through;
+	opacity: 0.4;
 }
 
 .todo-input {
@@ -99,6 +121,10 @@ li label {
 
 .switch.on {
 	background-color: #008241;
+}
+
+.switch.on.offline {
+	opacity: 0.4;
 }
 
 .switch div {
