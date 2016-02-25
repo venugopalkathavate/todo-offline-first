@@ -1,3 +1,59 @@
+// Storage classes
+function DataStore() {
+	var getDataStore = function(localStore) {
+		return localStore ? localDataStorage : databaseStore;
+	};
+
+	var localDataStorage = {
+		save: function(model) {
+			console.log("Local Store.... SAVE");
+			localStorage.setItem("todoList", JSON.stringify(model));
+		},
+		fetch: function() {
+			var deferred = Q.defer();
+
+			console.log("Local Store.... FETCH");
+			deferred.resolve({list: JSON.parse(localStorage.getItem("todoList"))});
+
+			return deferred.promise;
+		}
+	};
+
+	var databaseStore = {
+		save: function(model) {
+			console.log("Database Store.... SAVE", this.model);
+			$.ajax({
+	        url : "/todolist",
+	        type: "POST",
+	        data: JSON.stringify(model),
+	        contentType: "application/json; charset=utf-8",
+	        dataType: "json",
+	        success: function(data) {
+	            console.log(data);
+	        }
+	    });
+		},
+		fetch: function() {
+			var deferred = Q.defer(),
+				_this = this;
+
+			console.log("Database Store.... FETCH");
+			$.get("/todolist", function(data) {
+				if (!data.list) {
+					data = {list: []};
+				}
+
+				_this.model = data.list;
+				deferred.resolve(data);
+			});
+
+			return deferred.promise;
+		}
+	};
+
+	return getDataStore;
+}
+
 // Store to manage todo list
 var Store = {
 	model: null,
@@ -5,6 +61,7 @@ var Store = {
 		var	_this = this;
 
 		this.connection = connection;
+		this.store = new DataStore();
 
 		// Register listeners
 		window.addEventListener("offline", function() {
@@ -16,50 +73,13 @@ var Store = {
 		});
 	},
 	save: function (todoList) {
-		var localStore = !this.connection.isOnline();
-
 		if (todoList) {
 			this.model = {list: todoList};
 		}
-		console.log("localStore: ", localStore);
-		if (localStore) {
-			localStorage.setItem("todoList", JSON.stringify(this.model));
-			console.log("Local Store.... SAVE");
-		} else {
-			console.log("Database Store.... SAVE", this.model);
 
-			$.ajax({
-	        url : "/todolist",
-	        type: "POST",
-	        data: JSON.stringify(this.model),
-	        contentType: "application/json; charset=utf-8",
-	        dataType: "json",
-	        success: function(data) {
-	            console.log(data);
-	        }
-	    });
-		}
+		this.store(!this.connection.isOnline()).save(this.model);
 	},
 	fetch: function() {
-		var localStore = !this.connection.isOnline(),
-			deferred = Q.defer(),
-			_this = this;
-
-		if (localStore) {
-			deferred.resolve({list: JSON.parse(localStorage.getItem("todoList"))});
-			console.log("Local Store.... FETCH");
-		} else {
-			console.log("Database Store.... FETCH");
-			$.get("/todolist", function(data) {
-				if (!data.list) {
-					data = {list: []};
-				}
-
-				_this.model = data.list;
-				deferred.resolve(data);
-			});
-		}
-
-		return deferred.promise;
+		return this.store(!this.connection.isOnline()).fetch();
 	}
 };
