@@ -30,17 +30,35 @@ var TodoList = React.createClass({
 			e.preventDefault();
 
 			var _this = this;
-			this.setState({list: this.state.list.concat([{
-					id: Date.now(),
-					message: this.refs.inp.value,
-					done: false
-				}])
-			}, function() {
-				Store.save(_this.state.list);
-			});
+			this.setState(
+				{
+					list: this.state.list.concat([{
+						id: Date.now(),
+						message: this.refs.inp.value,
+						done: false
+					}])
+				},
+				function() {
+					Store.save(_this.state.list);
+				}
+			);
 
 			this.refs.inp.value = "";
 		}
+	},
+
+	deleteItem: function(id, e) {
+		var _this = this;
+		this.setState(
+			{
+				list: this.state.list.filter(function(item, i) {
+					return item.id !== id;
+				})
+			},
+			function() {
+				Store.save(_this.state.list);
+			}
+		);
 	},
 
 	itemDone: function(item, e) {
@@ -58,6 +76,7 @@ var TodoList = React.createClass({
 				<li key={item.id} onClick={_this.itemDone.bind(_this, item)}>
 					<input type="checkbox" id={item.id} ref={item.id} defaultChecked={item.done}/>
 					<label htmlFor={item.id}>{item.message}</label>
+					<button onClick={_this.deleteItem.bind(_this, item.id)} className="delete-item">&#x2715;</button>
 				</li>
 			);
     };
@@ -121,6 +140,8 @@ var WorkOffLine = React.createClass({
 			// Sync data with server
 			if(Connection.isOnline()) {
 				Store.save(JSON.parse(localStorage.getItem("todoList")).list);
+			} else {
+				Store.save(); // Store what ever is ther in the model to local storage.
 			}
 		});
 	},
