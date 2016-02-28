@@ -1,5 +1,5 @@
 var todoList = require("./routes/todo-list");
-var store = require("./modules/list-store").getStore();
+var storeService = require("./modules/list-store").getStore();
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
@@ -12,25 +12,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.get('/todolist', function(req, res) {
-  store.readFile("data/todolist.json", function(err, data) {
-    if (err) {
-      console.log(err);
-      res.status(500).send("File cannot be read");
-    } else {
-      res.send(JSON.parse(data));
-    }
-  });
+  storeService.fetch(req, res);
 });
 
 app.post('/todolist', function(req, res) {
-  //console.log(JSON.stringify(req.body, null, 2));
-  store.writeFile("data/todolist.json", JSON.stringify(req.body, null, 2), function(err) {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      res.send('File saved sucessfuly');
-    }
-  });
+  storeService.save(req, res);
 });
 
 app.listen(3001);
