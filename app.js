@@ -16,6 +16,7 @@ app.get('/todolist', function(req, res) {
 });
 
 app.post('/todolist', function(req, res) {
+  //console.log(req.body);
   storeService.save(req, res);
 });
 

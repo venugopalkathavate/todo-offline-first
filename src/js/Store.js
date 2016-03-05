@@ -7,18 +7,16 @@ var DataStore = {
 				localStorage.setItem("todoList", JSON.stringify(model));
 			},
 			fetch: function() {
-				var deferred = Q.defer();
-
 				console.log("Local Store.... FETCH");
-				deferred.resolve({list: JSON.parse(localStorage.getItem("todoList"))});
-
-				return deferred.promise;
+				return {list: JSON.parse(localStorage.getItem("todoList"))};
 			}
 		};
 
 		var databaseStore = {
 			save: function(model) {
-				console.log("Database Store.... SAVE", this.model);
+				var deferred = Q.defer();
+
+				console.log("Database Store.... SAVE, and ", model);
 				$.ajax({
 		        url : "/todolist",
 		        type: "POST",
@@ -26,9 +24,12 @@ var DataStore = {
 		        contentType: "application/json; charset=utf-8",
 		        dataType: "json",
 		        success: function(data) {
-		            console.log(data);
+		            //console.log(data);
+								deferred.resolve(data);
 		        }
 		    });
+
+				return deferred.promise;
 			},
 			fetch: function() {
 				var deferred = Q.defer(),
@@ -75,7 +76,7 @@ var Store = {
 			this.model = {list: todoList};
 		}
 
-		this.store(!this.connection.isOnline()).save(this.model);
+		return this.store(!this.connection.isOnline()).save(this.model);
 	},
 	fetch: function() {
 		return this.store(!this.connection.isOnline()).fetch();

@@ -15,50 +15,55 @@ var TodoList = React.createClass({
 	},
 
 	componentDidMount: function() {
-		var _this = this;
+		var _this = this, fetchData;
 
 		Store.init(Connection);
-		Store.fetch().then(
-			function(data) {
+		fetchData = Store.fetch();
+
+		if(fetchData.then) {
+			fetchData.then(function(data) {
 				_this.setState({list: data.list});
-			}
-		);
+			});
+		} else {
+			this.setState(fetchData);
+		}
+	},
+
+	saveItem: function(updatedList) {
+		var _this = this, promise;
+
+		promise = Store.save(updatedList);
+
+		if(promise && promise.then) {
+			promise.then(function(data) {
+				_this.setState({list: updatedList});
+			});
+		}	else {
+			this.setState({list: updatedList});
+		}
 	},
 
 	addTodoItem: function(e) {
 		if (e.keyCode === 13) { // Return Key
 			e.preventDefault();
 
-			var _this = this;
-			this.setState(
-				{
-					list: this.state.list.concat([{
-						id: Date.now(),
-						message: this.refs.inp.value,
-						done: false
-					}])
-				},
-				function() {
-					Store.save(_this.state.list);
-				}
-			);
+			this.saveItem(this.state.list.concat([{
+				id: Date.now(),
+				message: this.refs.inp.value,
+				done: false
+			}]));
 
 			this.refs.inp.value = "";
 		}
 	},
 
 	deleteItem: function(id, e) {
-		var _this = this;
-		this.setState(
-			{
-				list: this.state.list.filter(function(item, i) {
-					return item.id !== id;
-				})
-			},
-			function() {
-				Store.save(_this.state.list);
-			}
-		);
+		e.preventDefault();
+		e.stopPropagation();
+		
+		this.saveItem(this.state.list.filter(function(item, i) {
+			return item.id !== id;
+		}));
 	},
 
 	itemDone: function(item, e) {
